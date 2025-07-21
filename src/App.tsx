@@ -44,7 +44,6 @@ function App() {
 
     setIsLoading(true);
 
-    
     try {
       // Provide BASE URL for API endpoint
       const baseUrl = process.env.NEXT_PUBLIC_URL;
@@ -108,9 +107,6 @@ function App() {
       firstName: formFields.firstName,
       lastName: formFields.lastName,
     });
-
-    // Clear form after successful submission
-    // handleClearAll();
   };
 
   // TODO: Clear all fields function
