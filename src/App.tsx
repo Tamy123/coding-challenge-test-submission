@@ -30,9 +30,7 @@ function App() {
 
   const { addAddress } = useAddressBook();
 
-  // TODO: Fetch addresses implementation
   const handleAddressSubmit = async () => {
-
     // Clear previous results and errors
     setAddresses([]);
     setError(undefined);
@@ -45,7 +43,7 @@ function App() {
     setIsLoading(true);
 
     try {
-      // Provide BASE URL for API endpoint
+      // Fetch addresses from the API
       const baseUrl = process.env.NEXT_PUBLIC_URL;
       const response = await fetch(
         `${baseUrl}/api/getAddresses?postcode=${formFields.postCode}&streetnumber=${formFields.houseNumber}`
@@ -77,8 +75,7 @@ function App() {
     }
   };
 
-  // TODO: Add validation for first name and last name
-  // Add validation for first name and last name - without event parameter
+  // Add validation for first name and last name
   const handlePersonSubmit = () => {
     // Validate first name and last name
     if (!formFields.firstName.trim() || !formFields.lastName.trim()) {
@@ -109,7 +106,6 @@ function App() {
     });
   };
 
-  // TODO: Clear all fields function
   const handleClearAll = () => {
     formFields.reset();
     setAddresses([]);

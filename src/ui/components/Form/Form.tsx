@@ -4,7 +4,6 @@ import Button from "../Button/Button";
 import InputText from "../InputText/InputText";
 import $ from "./Form.module.css";
 
-// This type should cover all different attribute types for InputText
 type InputTextExtraProps = React.InputHTMLAttributes<HTMLInputElement> & {
   // Any additional custom props that InputText might accept
   value?: string;
@@ -14,7 +13,6 @@ type InputTextExtraProps = React.InputHTMLAttributes<HTMLInputElement> & {
 interface FormEntry {
   name: string;
   placeholder: string;
-  // TODO: Defined a suitable type for extra props
   // This type should cover all different of attribute types
   extraProps: InputTextExtraProps;
 }

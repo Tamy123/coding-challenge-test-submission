@@ -26,16 +26,13 @@ export default async function handle(
     });
   }
 
-  /** TODO: Implement the validation logic to ensure input value
-   *  is all digits and non negative
-   */
+
   const isStrictlyNumeric = (value: string) => {
     // Check if the value contains only digits (0-9)
     // This regex ensures no negative signs, decimals, or other characters
     return /^\d+$/.test(value);
   };
 
-  /** TODO: Refactor the code below so there is no duplication of logic for postCode/streetNumber digit checks. */
   // Refactored validation using a helper function to avoid duplication
   const validateNumericField = (
     fieldValue: string,

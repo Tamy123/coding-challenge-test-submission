@@ -10,17 +10,11 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-/* TODO: Add the 'Roboto' font from Google fonts and add it as a global CSS var called `--font-primary` */
-/* TODO: Make application responsive. It is already for the most part, but it is not optimal for smaller screens.
-* - Making the application responsive using the Mobile First principle.
-*/
-
 :root {
-
    /* Font variables */
   --font-primary: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen', 'Ubuntu',
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  /* Color and layout variables */
+  /* Color variables */
   --border-radius-default: 4px;
   --border-radius-xl: 15px;
   --color-accent: #cacfdd;
@@ -31,7 +25,6 @@ code {
   --color-text-light: #72787d;
   --width-input: 20rem;
   --width-content: 30rem;
-  
   /* Layout variables */
   --border-radius-default: 4px;
   --width-input: 300px;
