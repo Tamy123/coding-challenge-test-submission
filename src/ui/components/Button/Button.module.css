@@ -21,5 +21,36 @@
 }
 
 /** TODO: Create separate styles for .primary and .secondary variants of this button:
-* - Must use the CSS variables declared in App.css
+* - Must use the CSS variables declared in global.css
 */
+
+/* Primary button variant - uses brand color */
+.primary {
+  background-color: var(--color-brand);
+  border: 2px solid var(--color-brand);
+}
+
+/* Secondary button variant - different styles based on context */
+.secondary {
+  background-color: transparent;
+  border: 2px solid var(--color-brand);
+  color: var(--color-brand);
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-right: 0.5em;
+}

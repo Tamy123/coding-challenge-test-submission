@@ -3,12 +3,12 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 
 // Define a type for the slice state
-interface CounterState {
+interface AddressBookState {
   addresses: Address[];
 }
 
 // Define the initial state using that type
-const initialState: CounterState = {
+const initialState: AddressBookState = {
   addresses: [],
 };
 
@@ -19,10 +19,22 @@ export const addressBookSlice = createSlice({
   reducers: {
     addAddress: (state, action: PayloadAction<Address>) => {
       /** TODO: Prevent duplicate addresses */
-      state.addresses.push(action.payload);
+      // Check if an address with the same ID already exists
+      const addressExists = state.addresses.some(
+        (address) => address.id === action.payload.id
+      );
+      
+      // Only add the address if it doesn't already exist
+      if (!addressExists) {
+        state.addresses.push(action.payload);
+      }
     },
     removeAddress: (state, action: PayloadAction<string>) => {
       /** TODO: Write a state update which removes an address from the addresses array. */
+      // Filter out the address with the matching ID
+      state.addresses = state.addresses.filter(
+        (address) => address.id !== action.payload
+      );
     },
     updateAddresses: (state, action: PayloadAction<Address[]>) => {
       state.addresses = action.payload;

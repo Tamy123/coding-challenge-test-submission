@@ -1,0 +1,26 @@
+
+.error {
+  color: #ef4444;
+  background-color: #fee2e2;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid #fecaca;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Optional: Add an icon or animation */
+.error::before {
+  content: "⚠️";
+  font-size: 1rem;
+}
+
+/* Optional: Add hover effect */
+.error:hover {
+  background-color: #fecaca;
+  transition: background-color 0.2s ease;
+}

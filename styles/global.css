@@ -16,6 +16,11 @@ code {
 */
 
 :root {
+
+   /* Font variables */
+  --font-primary: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen', 'Ubuntu',
+    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  /* Color and layout variables */
   --border-radius-default: 4px;
   --border-radius-xl: 15px;
   --color-accent: #cacfdd;
@@ -26,6 +31,10 @@ code {
   --color-text-light: #72787d;
   --width-input: 20rem;
   --width-content: 30rem;
+  
+  /* Layout variables */
+  --border-radius-default: 4px;
+  --width-input: 300px;
 }
 
 * {
@@ -38,6 +47,7 @@ body {
   font-family: var(--font-primary);
   background: var(--color-accent);
 }
+
 
 main {
   padding: 2rem;
@@ -61,4 +71,85 @@ fieldset {
 
 legend {
   color: var(--color-text-light);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media screen and (max-width: 767px) {
+  :root {
+    --width-input: 100%;        /* Full width inputs on mobile */
+    --width-content: 100%;      /* Full width content */
+  }
+  
+  /* Full width buttons that stack */
+  button {
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+  
+  /* Form spacing */
+  .formRow {
+    margin-bottom: 0.75rem;
+  }
+  
+  /* Full width inputs with iOS zoom prevention */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"] {
+    width: 100%;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Section padding */
+  section {
+    padding: 1rem;
+  }
+  
+  /* Typography scaling */
+  h1 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+  
+  h2 {
+    font-size: 1.25rem;
+  }
+  
+  h3 {
+    font-size: 1.1rem;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  body {
+    font-size: 18px;
+  }
+  
+  main {
+    padding: 1.5rem;
+  }
+  
+  fieldset {
+    margin: 1.5rem 0;
+    max-width: var(--width-input); /* Constrained width */
+  }
+  
+  legend {
+    font-size: 1rem;
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  main {
+    padding: 2rem;
+  }
+  
+  fieldset {
+    margin: 2rem 0;
+  }
 }

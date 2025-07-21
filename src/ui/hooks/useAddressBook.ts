@@ -16,20 +16,31 @@ export default function useAddressBook() {
   const addresses = useAppSelector(selectAddress);
   const [loading, setLoading] = React.useState(true);
 
-  const updateDatabase = React.useCallback(() => {
-    databaseService.setItem("addresses", addresses);
+  // const updateDatabase = React.useCallback(() => {
+  //   databaseService.setItem("addresses", addresses);
+  // }, [addresses]);
+
+  // Update the database whenever addresses change
+  // This is a side effect that ensures the database is always in sync with the Redux store
+  React.useEffect(() => {
+    // if (addresses.length > 0) {
+      // Optional: only update if there are addresses
+      databaseService.setItem("addresses", addresses);
+    // }
   }, [addresses]);
 
   return {
     /** Add address to the redux store */
     addAddress: (address: Address) => {
       dispatch(addAddress(address));
-      updateDatabase();
+      // this was not really updating the database
+      // updateDatabase();
     },
     /** Remove address by ID from the redux store */
     removeAddress: (id: string) => {
       dispatch(removeAddress(id));
-      updateDatabase();
+      // this was not really updating the database
+      // updateDatabase();
     },
     /** Loads saved addresses from the indexedDB */
     loadSavedAddresses: async () => {
