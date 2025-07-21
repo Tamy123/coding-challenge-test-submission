@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import '@testing-library/jest-dom';
@@ -7,22 +7,22 @@ import App from './App';
 import addressBookReducer from './core/reducers/addressBookSlice';
 
 // Mock dependencies
-jest.mock('@/hooks/useAddressBook', () => ({
-  __esModule: true,
-  default: () => ({
-    addAddress: jest.fn(),
-    removeAddress: jest.fn(),
-    loadSavedAddresses: jest.fn(),
-    loading: false,
-  }),
-}));
-
+jest.mock('@/hooks/useAddressBook');
+jest.mock('@/hooks/useFormFields');
+jest.mock('@/hooks/useAddressSearch');
 jest.mock('./core/models/address', () => ({
   __esModule: true,
   default: (address: any) => ({
     ...address,
     id: `${address.lat || Date.now()}_${address.lon || Math.random()}`,
   }),
+}));
+jest.mock('./core/services/addressApi', () => ({
+  addressApi: {
+    searchAddresses: jest.fn(),
+  },
+  isSuccessResponse: jest.fn(),
+  getErrorMessage: jest.fn(),
 }));
 
 // Helper to render with Redux
@@ -40,12 +40,49 @@ const renderApp = () => {
   );
 };
 
-// Mock fetch
-global.fetch = jest.fn();
-
 describe('App', () => {
+  // Get mocked modules
+  const useFormFields = require('@/hooks/useFormFields').default;
+  const useAddressSearch = require('@/hooks/useAddressSearch').useAddressSearch;
+  const useAddressBook = require('@/hooks/useAddressBook').default;
+  
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Default implementation for useFormFields
+    useFormFields.mockReturnValue({
+      postCode: '',
+      houseNumber: '',
+      firstName: '',
+      lastName: '',
+      selectedAddress: '',
+      onChange: jest.fn(),
+      reset: jest.fn(),
+      values: {
+        postCode: '',
+        houseNumber: '',
+        firstName: '',
+        lastName: '',
+        selectedAddress: '',
+      }
+    });
+    
+    // Default implementation for useAddressSearch
+    useAddressSearch.mockReturnValue({
+      addresses: [],
+      isLoading: false,
+      error: undefined,
+      searchAddresses: jest.fn(),
+      clearResults: jest.fn(),
+    });
+    
+    // Default implementation for useAddressBook
+    useAddressBook.mockReturnValue({
+      addAddress: jest.fn(),
+      removeAddress: jest.fn(),
+      loadSavedAddresses: jest.fn(),
+      loading: false,
+    });
   });
 
   test('renders heading', () => {
@@ -53,7 +90,15 @@ describe('App', () => {
     expect(screen.getByText('Create your own address book!')).toBeInTheDocument();
   });
 
-  test('shows error for empty form', () => {
+  test('shows validation error for empty form', () => {
+    useAddressSearch.mockReturnValue({
+      addresses: [],
+      isLoading: false,
+      error: 'Please enter both postcode and house number',
+      searchAddresses: jest.fn(),
+      clearResults: jest.fn(),
+    });
+
     renderApp();
     
     fireEvent.click(screen.getByText('Find'));
@@ -61,57 +106,87 @@ describe('App', () => {
     expect(screen.getByText('Please enter both postcode and house number')).toBeInTheDocument();
   });
 
-  test('fetches addresses', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        status: 'ok',
-        details: [{ street: 'Test Street', city: 'Test City' }]
-      }),
+  test('displays addresses after successful search', async () => {
+    const mockAddresses = [
+      { id: '1', street: 'Test Street', city: 'Test City', postCode: '1234' }
+    ];
+
+    useAddressSearch.mockReturnValue({
+      addresses: mockAddresses,
+      isLoading: false,
+      error: undefined,
+      searchAddresses: jest.fn(),
+      clearResults: jest.fn(),
     });
 
     renderApp();
     
-    fireEvent.change(screen.getByPlaceholderText('Post Code'), { 
-      target: { value: '1234' } 
+    expect(screen.getByText(/Test Street/)).toBeInTheDocument();
+  });
+
+  test('shows loading state', () => {
+    useAddressSearch.mockReturnValue({
+      addresses: [],
+      isLoading: true,
+      error: undefined,
+      searchAddresses: jest.fn(),
+      clearResults: jest.fn(),
     });
-    fireEvent.change(screen.getByPlaceholderText('House number'), { 
-      target: { value: '10' } 
-    });
-    fireEvent.click(screen.getByText('Find'));
+
+    renderApp();
     
-    await waitFor(() => {
-      expect(screen.getByText(/Test Street/)).toBeInTheDocument();
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
+
+  test('displays API error', () => {
+    useAddressSearch.mockReturnValue({
+      addresses: [],
+      isLoading: false,
+      error: 'Error fetching addresses. Please try again later.',
+      searchAddresses: jest.fn(),
+      clearResults: jest.fn(),
     });
+
+    renderApp();
+    
+    expect(screen.getByText('Error fetching addresses. Please try again later.')).toBeInTheDocument();
   });
 
   test('validates personal info', async () => {
+    const mockAddresses = [
+      { id: '1', street: 'Test Street', city: 'Test City', postCode: '1234' }
+    ];
+
+    useAddressSearch.mockReturnValue({
+      addresses: mockAddresses,
+      isLoading: false,
+      error: undefined,
+      searchAddresses: jest.fn(),
+      clearResults: jest.fn(),
+    });
+
+    // Mock form fields to have selected address
+    useFormFields.mockReturnValue({
+      postCode: '',
+      houseNumber: '',
+      firstName: '',
+      lastName: '',
+      selectedAddress: '1', // This makes the form appear
+      onChange: jest.fn(),
+      reset: jest.fn(),
+      values: {
+        postCode: '',
+        houseNumber: '',
+        firstName: '',
+        lastName: '',
+        selectedAddress: '1',
+      }
+    });
+
     renderApp();
     
-    // Mock successful address fetch
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        status: 'ok',
-        details: [{ street: 'Test Street' }]
-      }),
-    });
-    
-    // Search for address
-    fireEvent.change(screen.getByPlaceholderText('Post Code'), { 
-      target: { value: '1234' } 
-    });
-    fireEvent.change(screen.getByPlaceholderText('House number'), { 
-      target: { value: '10' } 
-    });
-    fireEvent.click(screen.getByText('Find'));
-    
-    await waitFor(() => {
-      expect(screen.getByRole('radio')).toBeInTheDocument();
-    });
-    
-    // Select address
-    fireEvent.click(screen.getByRole('radio'));
+    // The form should now be visible
+    expect(screen.getByText('✏️ Add personal info to address')).toBeInTheDocument();
     
     // Try to submit without names
     fireEvent.click(screen.getByText('Add to addressbook'));
@@ -120,17 +195,97 @@ describe('App', () => {
   });
 
   test('clears all fields', () => {
+    const mockClearResults = jest.fn();
+    const mockReset = jest.fn();
+
+    useAddressSearch.mockReturnValue({
+      addresses: [],
+      isLoading: false,
+      error: undefined,
+      searchAddresses: jest.fn(),
+      clearResults: mockClearResults,
+    });
+
+    useFormFields.mockReturnValue({
+      postCode: '1234',
+      houseNumber: '10',
+      firstName: '',
+      lastName: '',
+      selectedAddress: '',
+      onChange: jest.fn(),
+      reset: mockReset,
+      values: {
+        postCode: '1234',
+        houseNumber: '10',
+        firstName: '',
+        lastName: '',
+        selectedAddress: '',
+      }
+    });
+
     renderApp();
-    
-    const postcodeInput = screen.getByPlaceholderText('Post Code');
-    const houseNumberInput = screen.getByPlaceholderText('House number');
-    
-    fireEvent.change(postcodeInput, { target: { value: '1234' } });
-    fireEvent.change(houseNumberInput, { target: { value: '10' } });
     
     fireEvent.click(screen.getByText('Clear all fields'));
     
-    expect(postcodeInput).toHaveValue('');
-    expect(houseNumberInput).toHaveValue('');
+    expect(mockReset).toHaveBeenCalled();
+    expect(mockClearResults).toHaveBeenCalled();
+  });
+
+  test('submits address with personal info', () => {
+    const mockAddAddress = jest.fn();
+    const mockAddresses = [
+      { id: '1', street: 'Test Street', city: 'Test City', postCode: '1234' }
+    ];
+
+    useAddressBook.mockReturnValue({
+      addAddress: mockAddAddress,
+      removeAddress: jest.fn(),
+      loadSavedAddresses: jest.fn(),
+      loading: false,
+    });
+
+    useAddressSearch.mockReturnValue({
+      addresses: mockAddresses,
+      isLoading: false,
+      error: undefined,
+      searchAddresses: jest.fn(),
+      clearResults: jest.fn(),
+    });
+
+    useFormFields.mockReturnValue({
+      postCode: '',
+      houseNumber: '',
+      firstName: 'John',
+      lastName: 'Doe',
+      selectedAddress: '1',
+      onChange: jest.fn(),
+      reset: jest.fn(),
+      values: {
+        postCode: '',
+        houseNumber: '',
+        firstName: 'John',
+        lastName: 'Doe',
+        selectedAddress: '1',
+      }
+    });
+
+    renderApp();
+    
+    // The form should be visible
+    expect(screen.getByText('✏️ Add personal info to address')).toBeInTheDocument();
+    
+    // Submit the form
+    fireEvent.click(screen.getByText('Add to addressbook'));
+    
+    expect(mockAddAddress).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: '1',
+        street: 'Test Street',
+        city: 'Test City',
+        postCode: '1234',
+        firstName: 'John',
+        lastName: 'Doe',
+      })
+    );
   });
 });
