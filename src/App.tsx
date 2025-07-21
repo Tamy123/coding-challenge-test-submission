@@ -9,12 +9,9 @@ import ErrorMessage from "@/components/Error/Error";
 import Form from "@/components/Form/Form";
 import useAddressBook from "@/hooks/useAddressBook";
 import useFormFields from "@/hooks/useFormFields";
-
-import { Address as AddressType } from "./types";
-import transformAddress from "./core/models/address";
+import { useAddressSearch } from "@/hooks/useAddressSearch";
 
 function App() {
-  
   // Using custom hook instead of individual useState
   const formFields = useFormFields({
     postCode: "",
@@ -24,67 +21,43 @@ function App() {
     selectedAddress: "",
   });
 
-  const [error, setError] = React.useState<undefined | string>(undefined);
-  const [addresses, setAddresses] = React.useState<AddressType[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
+  // Address search functionality
+  const {
+    addresses,
+    isLoading,
+    error: searchError,
+    searchAddresses,
+    clearResults,
+  } = useAddressSearch();
+
+  // Local error state for form validation
+  const [validationError, setValidationError] = React.useState<
+    string | undefined
+  >();
+
+  // Combined error (search or validation)
+  const error = searchError || validationError;
 
   const { addAddress } = useAddressBook();
 
   const handleAddressSubmit = async () => {
-    // Clear previous results and errors
-    setAddresses([]);
-    setError(undefined);
-
-    if (!formFields.postCode || !formFields.houseNumber) {
-      setError("Please enter both postcode and house number");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Fetch addresses from the API
-      const baseUrl = process.env.NEXT_PUBLIC_URL;
-      const response = await fetch(
-        `${baseUrl}/api/getAddresses?postcode=${formFields.postCode}&streetnumber=${formFields.houseNumber}`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch addresses");
-      }
-
-      const data = await response.json();
-
-      // Check if we have a successful response with details
-      if (data && data.status === "ok" && data.details && Array.isArray(data.details) && data.details.length > 0) {
-        // Transform addresses and add house number
-        const transformedAddresses = data.details.map((addr: any) =>
-          transformAddress(addr)
-        );
-        setAddresses(transformedAddresses);
-      } else if (data && data.status === "error") {
-        setError(data.errormessage || "Error fetching addresses");
-      } else {
-        setError("No addresses found for this postcode and house number");
-      }
-    } catch (err) {
-      setError("Error fetching addresses. Please try again later.");
-      console.error("Address fetch error:", err);
-    } finally {
-      setIsLoading(false);
-    }
+    setValidationError(undefined);
+    await searchAddresses(formFields.postCode, formFields.houseNumber);
   };
 
   // Add validation for first name and last name
   const handlePersonSubmit = () => {
-    // Validate first name and last name
+    setValidationError(undefined);
+
+    // Validate name fields
     if (!formFields.firstName.trim() || !formFields.lastName.trim()) {
-      setError("First name and last name fields mandatory!");
+      setValidationError("First name and last name fields mandatory!");
       return;
     }
 
+    // Validate address selection
     if (!formFields.selectedAddress || !addresses.length) {
-      setError(
+      setValidationError(
         "No address selected, try to select an address or find one if you haven't"
       );
       return;
@@ -95,10 +68,11 @@ function App() {
     );
 
     if (!foundAddress) {
-      setError("Selected address not found");
+      setValidationError("Selected address not found");
       return;
     }
 
+    // Add to address book
     addAddress({
       ...foundAddress,
       firstName: formFields.firstName,
@@ -108,8 +82,8 @@ function App() {
 
   const handleClearAll = () => {
     formFields.reset();
-    setAddresses([]);
-    setError(undefined);
+    clearResults();
+    setValidationError(undefined);
   };
 
   // Form entries for address search
