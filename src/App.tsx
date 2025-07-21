@@ -14,14 +14,6 @@ import { Address as AddressType } from "./types";
 import transformAddress from "./core/models/address";
 
 function App() {
-  /**
-   * Form fields states
-   * TODO: Write a custom hook to set form fields in a more generic way:
-   * - Hook must expose an onChange handler to be used by all <InputText /> and <Radio /> components
-   * - Hook must expose all text form field values, like so: { postCode: '', houseNumber: '', ...etc }
-   * - Remove all individual React.useState
-   * - Remove all individual onChange handlers, like handlePostCodeChange for example
-   */
   
   // Using custom hook instead of individual useState
   const formFields = useFormFields({
@@ -40,7 +32,6 @@ function App() {
 
   // TODO: Fetch addresses implementation
   const handleAddressSubmit = async () => {
-    // e.preventDefault();
 
     // Clear previous results and errors
     setAddresses([]);
@@ -56,7 +47,7 @@ function App() {
     
     try {
       // Provide BASE URL for API endpoint
-      const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+      const baseUrl = process.env.NEXT_PUBLIC_URL;
       const response = await fetch(
         `${baseUrl}/api/getAddresses?postcode=${formFields.postCode}&streetnumber=${formFields.houseNumber}`
       );
@@ -217,7 +208,6 @@ function App() {
         {/* Using ErrorMessage component */}
         {error && <ErrorMessage error={error} />}
 
-        {/* TODO: Clear all fields button */}
         {/* Clear all fields button */}
         <Button type="button" onClick={handleClearAll} variant="secondary">
           Clear all fields
